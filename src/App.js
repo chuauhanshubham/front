@@ -22,7 +22,7 @@ function App() {
     setLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:5000/upload', formData);
+      const res = await axios.post('https://excel-1whh.onrender.com/upload', formData);
       setMerchants(res.data.merchants);
       setSelectedMerchants([]);
       setMerchantPercents({});
@@ -49,14 +49,14 @@ function App() {
     setLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:5000/generate', {
+      const res = await axios.post('https://excel-1whh.onrender.com/generate', {
         merchantPercents: selectedPercents,
         startDate,
         endDate
       });
 
       setSummary(res.data.summary);
-      setDownloadUrl(`http://localhost:5000${res.data.downloadUrl}`);
+      setDownloadUrl(`https://excel-1whh.onrender.com${res.data.downloadUrl}`);
     } catch (err) {
       alert('❌ Error generating summary: ' + (err.response?.data?.error || err.message));
     }
