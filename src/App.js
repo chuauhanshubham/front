@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import axios from 'axios';
 import './App.css';
 
-function App() {
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
+function SummaryPanel({ panelType, onSummaryUpdate }) {
   const [file, setFile] = useState(null);
   const [merchants, setMerchants] = useState([]);
   const [selectedMerchants, setSelectedMerchants] = useState([]);
   const [merchantPercents, setMerchantPercents] = useState({});
-  const [defaultPercent, setDefaultPercent] = useState(3.5);
+  const [defaultPercent, setDefaultPercent] = useState(3.6);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [summary, setSummary] = useState(null);
@@ -22,15 +25,15 @@ function App() {
     setLoading(true);
 
     try {
-      const res = await axios.post('https://excel-1whh.onrender.com/upload', formData);
+      const res = await axios.post(`${API_BASE_URL}/upload?type=${panelType}`, formData);
       setMerchants(res.data.merchants);
       setSelectedMerchants([]);
       setMerchantPercents({});
       setSummary(null);
       setDownloadUrl(null);
-      alert('✅ File uploaded successfully');
+      alert(`✅ ${panelType} - File uploaded successfully`);
     } catch (err) {
-      alert('❌ Upload failed: ' + (err.response?.data?.error || err.message));
+      alert(`❌ ${panelType} - Upload failed: ` + (err.response?.data?.error || err.message));
     }
 
     setLoading(false);
@@ -49,16 +52,17 @@ function App() {
     setLoading(true);
 
     try {
-      const res = await axios.post('https://excel-1whh.onrender.com/generate', {
+      const res = await axios.post(`${API_BASE_URL}/generate?type=${panelType}`, {
         merchantPercents: selectedPercents,
         startDate,
         endDate
       });
 
       setSummary(res.data.summary);
-      setDownloadUrl(`https://excel-1whh.onrender.com${res.data.downloadUrl}`);
+      setDownloadUrl(`${API_BASE_URL}${res.data.downloadUrl}`);
+      onSummaryUpdate(panelType, res.data.summary);
     } catch (err) {
-      alert('❌ Error generating summary: ' + (err.response?.data?.error || err.message));
+      alert(`❌ ${panelType} - Error generating summary: ` + (err.response?.data?.error || err.message));
     }
 
     setLoading(false);
@@ -75,62 +79,78 @@ function App() {
   };
 
   return (
-    <div className="app-container">
-      <div className="sidebar">
-        <h2>📊 Excel Summary Generator</h2>
+    <div className="panel-container">
+      <h2>Excel {panelType}</h2>
 
-        <div style={{ marginBottom: '8px' }}>
+      <div className="section">
+        <h3>Choose File</h3>
+        <div className="file-upload-section">
           <input
-            id="file-upload"
+            id={`file-upload-${panelType}`}
             type="file"
             accept=".xls,.xlsx"
             onChange={e => setFile(e.target.files[0])}
             style={{ display: 'none' }}
           />
-          <label htmlFor="file-upload" className="custom-file-upload">
+          <label htmlFor={`file-upload-${panelType}`} className="custom-file-upload">
             📁 Choose File
           </label>
-          {file && <span style={{ marginLeft: '10px' }}>{file.name}</span>}
+          {file && <span className="file-name">{file.name}</span>}
         </div>
-
-        <button onClick={handleUpload} disabled={!file || loading}>
+        <button 
+          onClick={handleUpload} 
+          disabled={!file || loading}
+          className={`upload-btn ${loading ? 'loading' : ''}`}
+        >
           {loading ? 'Uploading...' : '⬆️ Upload File'}
         </button>
+      </div>
 
-        <h3>🗓️ Filter Options</h3>
-        <label>Start Date:</label>
-        <input
-          type="date"
-          value={startDate}
-          onChange={e => setStartDate(e.target.value)}
-        />
-        <label>End Date:</label>
-        <input
-          type="date"
-          value={endDate}
-          onChange={e => setEndDate(e.target.value)}
-        />
+      <div className="section">
+        <h3>Filter Options</h3>
+        <div className="date-inputs">
+          <div className="date-input-group">
+            <label>Start Date:</label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={e => setStartDate(e.target.value)}
+            />
+          </div>
+          <div className="date-input-group">
+            <label>End Date:</label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={e => setEndDate(e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
 
-        <div style={{ marginTop: '20px' }}>
-          <h3>🛍️ Select Merchants & %</h3>
-          <button onClick={handleSelectAll} style={{ marginBottom: '10px' }}>
-            Select All
-          </button>
-
-          <div style={{ marginBottom: '10px' }}>
+      <div className="section">
+        <h3>Select Merchants & %</h3>
+        <div className="merchant-controls">
+          <button onClick={handleSelectAll} className="select-all-btn">Select All</button>
+          <div className="default-percent">
             <label>Default %: </label>
             <input
               type="number"
-              style={{ width: '60px' }}
+              step="0.1"
+              min="0"
+              max="100"
               value={defaultPercent}
               onChange={e => setDefaultPercent(parseFloat(e.target.value))}
             />
           </div>
+        </div>
 
+        <div className="merchant-list">
           {merchants.map((merchant, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
+            <div key={i} className="merchant-item">
               <input
                 type="checkbox"
+                id={`merchant-${panelType}-${i}`}
                 checked={selectedMerchants.includes(merchant)}
                 onChange={e => {
                   if (e.target.checked) {
@@ -147,13 +167,15 @@ function App() {
                   }
                 }}
               />
-              <span style={{ marginLeft: '8px', marginRight: '8px', minWidth: '100px' }}>
+              <label htmlFor={`merchant-${panelType}-${i}`} className="merchant-name">
                 {merchant}
-              </span>
+              </label>
               <input
                 type="number"
                 placeholder="%"
-                style={{ width: '60px' }}
+                step="0.1"
+                min="0"
+                max="100"
                 disabled={!selectedMerchants.includes(merchant)}
                 value={merchantPercents[merchant] || ''}
                 onChange={e =>
@@ -166,49 +188,114 @@ function App() {
             </div>
           ))}
         </div>
-
-        <button onClick={handleGenerate} disabled={loading} style={{ marginTop: '10px' }}>
-          {loading ? 'Generating...' : '📈 Generate Summary'}
-        </button>
       </div>
 
-      <div className="summary-panel">
-        <h2>📄 Merchant Summary</h2>
+      <button 
+        onClick={handleGenerate} 
+        disabled={loading || selectedMerchants.length === 0 || !startDate || !endDate} 
+        className={`generate-btn ${loading ? 'loading' : ''}`}
+      >
+        {loading ? 'Generating...' : '📈 Generate Summary'}
+      </button>
 
-        {startDate && endDate && (
-          <p><strong>Date Range:</strong> {startDate} to {endDate}</p>
-        )}
+      {downloadUrl && (
+        <div className="download-btn">
+          <a href={downloadUrl} target="_blank" rel="noopener noreferrer">⬇️ Download Excel</a>
+        </div>
+      )}
+    </div>
+  );
+}
 
-        {summary && (
-          <table>
-            <thead>
-              <tr>
-                {Object.keys(summary[0]).map((key, i) => (
-                  <th key={i}>{key}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {summary.map((row, idx) => (
-                <tr key={idx}>
-                  {Object.values(row).map((val, i) => (
-                    <td key={i}>{val}</td>
+function HomePage({ summaries, setSummaries }) {
+  const handleSummaryUpdate = (panelType, summary) => {
+    setSummaries(prev => ({
+      ...prev,
+      [panelType]: summary
+    }));
+  };
+
+  return (
+    <div className="app-container">
+      <header className="app-header">
+        <h1>Excel Summary Generator</h1>
+        <nav>
+          <Link to="/combined" className="nav-link">
+            View Combined Summary
+          </Link>
+        </nav>
+      </header>
+      
+      <div className="panels-container">
+        <SummaryPanel panelType="Deposite" onSummaryUpdate={handleSummaryUpdate} />
+        <SummaryPanel panelType="Withdrawal" onSummaryUpdate={handleSummaryUpdate} />
+      </div>
+    </div>
+  );
+}
+
+function CombinedSummaryPage({ summaries }) {
+  const combined = [...(summaries['Deposite'] || []), ...(summaries['Withdrawal'] || [])];
+
+  return (
+    <div className="app-container">
+      <header className="app-header">
+        <h1>Combined Merchant Summary</h1>
+        <nav>
+          <Link to="/" className="nav-link">
+            Back to Panels
+          </Link>
+        </nav>
+      </header>
+
+      <div className="combined-summary-container">
+        {combined.length > 0 ? (
+          <div className="table-container">
+            <table>
+              <thead>
+                <tr>
+                  {Object.keys(combined[0] || {}).map((k, i) => (
+                    <th key={i}>{k}</th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-
-        {downloadUrl && (
-          <div className="download-btn">
-            <a href={downloadUrl} target="_blank" rel="noopener noreferrer">
-              ⬇️ Download Excel
-            </a>
+              </thead>
+              <tbody>
+                {combined.map((row, i) => (
+                  <tr key={i}>
+                    {Object.values(row).map((val, j) => (
+                      <td key={j}>{val}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="no-data-message">
+            No summary data available. Please generate summaries in both panels first.
           </div>
         )}
       </div>
     </div>
+  );
+}
+
+function App() {
+  const [summaries, setSummaries] = useState({});
+
+  return (
+    <Router>
+      <Routes>
+        <Route 
+          path="/" 
+          element={<HomePage summaries={summaries} setSummaries={setSummaries} />} 
+        />
+        <Route 
+          path="/combined" 
+          element={<CombinedSummaryPage summaries={summaries} />} 
+        />
+      </Routes>
+    </Router>
   );
 }
 
