@@ -11,6 +11,189 @@
   --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   --transition: all 0.3s ease;
 }
+/* App.css */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+.app-container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 20px;
+}
+
+.app-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 32px;
+  color: #0077cc;
+}
+
+.nav-link {
+  margin-top: 10px;
+  display: inline-block;
+  text-decoration: none;
+  color: #0077cc;
+  font-weight: bold;
+}
+
+.nav-link:hover {
+  text-decoration: underline;
+}
+
+.panels-container {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.panel-container {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  flex: 1;
+  min-width: 500px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.section {
+  margin-bottom: 20px;
+}
+
+.file-upload-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.custom-file-upload {
+  background: #0077cc;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.file-name {
+  font-size: 14px;
+  color: #333;
+}
+
+.upload-btn,
+.select-all-btn,
+.generate-btn {
+  margin-top: 10px;
+  padding: 10px 20px;
+  background-color: #28a745;
+  border: none;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.upload-btn.loading,
+.generate-btn.loading {
+  background-color: #888;
+  cursor: not-allowed;
+}
+
+.upload-btn:hover,
+.select-all-btn:hover,
+.generate-btn:hover {
+  opacity: 0.9;
+}
+
+.date-inputs {
+  display: flex;
+  gap: 20px;
+}
+
+.date-input-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.default-percent {
+  margin-top: 10px;
+}
+
+.default-percent input {
+  width: 60px;
+}
+
+.merchant-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px;
+  background: #fafafa;
+}
+
+.merchant-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.merchant-item input[type="number"] {
+  width: 60px;
+  margin-left: 10px;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+th,
+td {
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+
+th {
+  background-color: #0077cc;
+  color: white;
+}
+
+.no-data-message {
+  text-align: center;
+  padding: 20px;
+  font-weight: bold;
+  color: red;
+}
+
+.download-btn {
+  margin-top: 15px;
+}
+
+.download-btn a {
+  background: #0077cc;
+  padding: 10px 20px;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+}
+
+.download-btn a:hover {
+  background: #005fa3;
+}
 
 * {
   box-sizing: border-box;
